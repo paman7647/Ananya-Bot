@@ -1,4 +1,4 @@
-"""Bot manager module for controlling the Telegram bot lifecycle."""
+"""Module for managing Telegram bot lifecycle and statistics."""
 import asyncio
 import logging
 from datetime import datetime
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class BotManager:
-    """Manages the Telegram bot lifecycle including start, stop, and restart operations."""
+    """Manages the Telegram bot instance, startup, shutdown, and statistics tracking."""
 
     def __init__(self):
         self.client: Optional[TelegramClient] = None
