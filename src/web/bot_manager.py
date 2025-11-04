@@ -1,4 +1,4 @@
-"""Module for managing the Telegram bot lifecycle and statistics."""
+"""Bot manager module for controlling the Telegram bot lifecycle."""
 import asyncio
 import logging
 from datetime import datetime
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class BotManager:
-    """Manages the Telegram bot instance, lifecycle, and statistics tracking."""
+    """Manages the Telegram bot lifecycle including start, stop, and restart operations."""
 
     def __init__(self):
         self.client: Optional[TelegramClient] = None
@@ -96,12 +96,12 @@ class BotManager:
             self.stats["active_users"] = data
 
     async def get_active_users(self) -> int:
-        """Get count of users who sent messages in the last 24 hours"""  
+        """Get count of users who sent messages in the last 24 hours"""
         # This is a placeholder - implement actual database query
         return 0
 
     async def update_active_users(self):
-        """Update active users count periodically"""  
+        """Update active users count periodically"""
         while True:
             try:
                 active_users = await self.get_active_users()
