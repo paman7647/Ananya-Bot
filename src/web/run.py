@@ -1,9 +1,9 @@
-import uvicorn
 import os
 import sys
-import signal
-import asyncio
 from pathlib import Path
+
+import uvicorn
+
 from src.config import PORT, logger
 
 def main():
