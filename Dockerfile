@@ -30,7 +30,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ ./src/
 COPY launch_bot.py .
 COPY start.sh .
-COPY .env.example .
 
 # Create necessary directories
 RUN mkdir -p logs backups
