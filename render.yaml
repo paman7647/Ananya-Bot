@@ -2,10 +2,9 @@ services:
   # Web Service (FastAPI Admin Panel + Bot Controller)
   - type: web
     name: ananya-bot-web
-    env: docker
-    plan: starter
+    runtime: docker
+    plan: free
     dockerfilePath: ./Dockerfile
-    region: oregon
     envVars:
       - key: TELEGRAM_BOT_TOKEN
         sync: false
@@ -30,11 +29,11 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: PORT
-        value: 8080
+        value: 10000
       - key: LOG_LEVEL
         value: INFO
       - key: PYTHONUNBUFFERED
-        value: 1
+        value: "1"
     healthCheckPath: /health
     autoDeploy: true
 
@@ -42,4 +41,6 @@ databases:
   # MongoDB Database
   - name: ananya-mongodb
     databaseName: telegram_bot
-    plan: starter
+    user: ananya_user
+    plan: free
+    ipAllowList: []
