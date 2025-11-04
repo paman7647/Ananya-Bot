@@ -37,7 +37,7 @@ class GeminiHandler:
         history: List[Dict] = None,
         personality: str = DEFAULT_PERSONALITY,
         media_parts: list = None,
-        use_search: bool = False,
+        use_search: bool = True,
         stream: bool = False,
         model_config: dict = None,
         voice_config: dict = None
