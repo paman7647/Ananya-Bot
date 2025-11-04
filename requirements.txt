@@ -1,0 +1,27 @@
+# Core dependencies
+telethon>=1.34.0
+pymongo>=4.6.0
+google-cloud-aiplatform>=1.38.0
+google-cloud-texttospeech>=2.14.0
+google-cloud-translate>=3.12.0
+google-genai>=0.8.0
+python-dotenv>=1.0.0
+psutil>=5.9.0
+
+# TTS fallback options
+gTTS>=2.5.0
+pyttsx3>=2.90
+
+# Web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+jinja2>=3.1.0
+python-multipart>=0.0.6
+
+# Optional performance improvements
+aiohttp>=3.9.0
+uvloop>=0.17.0
+
+# Development and testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0

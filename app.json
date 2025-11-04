@@ -1,0 +1,72 @@
+{
+  "name": "ananya-telegram-bot",
+  "description": "AI-powered Telegram bot with web admin panel",
+  "repository": "https://github.com/paman7647/ananya-bot",
+  "logo": "https://avatars.githubusercontent.com/u/paman7647",
+  "keywords": ["telegram", "bot", "ai", "fastapi", "python"],
+  "stack": "container",
+  "env": {
+    "TELEGRAM_BOT_TOKEN": {
+      "description": "Your Telegram Bot Token from @BotFather",
+      "required": true
+    },
+    "API_ID": {
+      "description": "Telegram API ID from my.telegram.org",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Telegram API Hash from my.telegram.org",
+      "required": true
+    },
+    "ADMIN_USER_ID": {
+      "description": "Your Telegram User ID (numeric)",
+      "required": true
+    },
+    "ADMIN_TOKEN": {
+      "description": "Admin authentication token",
+      "generator": "secret",
+      "required": true
+    },
+    "GEMINI_API_KEY": {
+      "description": "Google Gemini API Key",
+      "required": true
+    },
+    "MONGODB_URI": {
+      "description": "MongoDB connection string",
+      "required": true
+    },
+    "DATABASE_NAME": {
+      "description": "MongoDB database name",
+      "value": "telegram_bot",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for web application",
+      "generator": "secret",
+      "required": true
+    },
+    "SESSION_SECRET": {
+      "description": "Session secret for web application",
+      "generator": "secret",
+      "required": true
+    },
+    "LOG_LEVEL": {
+      "description": "Logging level",
+      "value": "INFO",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "mongodb:basic",
+      "as": "DATABASE"
+    }
+  ],
+  "buildpacks": []
+}

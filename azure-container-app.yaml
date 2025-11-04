@@ -1,0 +1,84 @@
+# Azure Container Apps deployment
+name: ananya-telegram-bot
+location: eastus
+resourceGroup: ananya-bot-rg
+
+properties:
+  managedEnvironmentId: /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/ananya-bot-rg/providers/Microsoft.App/managedEnvironments/ananya-env
+  configuration:
+    ingress:
+      external: true
+      targetPort: 8080
+      transport: auto
+      traffic:
+        - weight: 100
+          latestRevision: true
+    secrets:
+      - name: telegram-bot-token
+        value: YOUR_TELEGRAM_BOT_TOKEN
+      - name: api-id
+        value: YOUR_API_ID
+      - name: api-hash
+        value: YOUR_API_HASH
+      - name: admin-user-id
+        value: YOUR_ADMIN_USER_ID
+      - name: admin-token
+        value: YOUR_ADMIN_TOKEN
+      - name: gemini-api-key
+        value: YOUR_GEMINI_API_KEY
+      - name: mongodb-uri
+        value: YOUR_MONGODB_URI
+      - name: secret-key
+        value: YOUR_SECRET_KEY
+      - name: session-secret
+        value: YOUR_SESSION_SECRET
+  template:
+    containers:
+      - name: ananya-bot
+        image: ghcr.io/paman7647/ananya-bot:latest
+        resources:
+          cpu: 0.5
+          memory: 1.0Gi
+        env:
+          - name: TELEGRAM_BOT_TOKEN
+            secretRef: telegram-bot-token
+          - name: API_ID
+            secretRef: api-id
+          - name: API_HASH
+            secretRef: api-hash
+          - name: ADMIN_USER_ID
+            secretRef: admin-user-id
+          - name: ADMIN_TOKEN
+            secretRef: admin-token
+          - name: GEMINI_API_KEY
+            secretRef: gemini-api-key
+          - name: MONGODB_URI
+            secretRef: mongodb-uri
+          - name: SECRET_KEY
+            secretRef: secret-key
+          - name: SESSION_SECRET
+            secretRef: session-secret
+          - name: PORT
+            value: "8080"
+          - name: DATABASE_NAME
+            value: telegram_bot
+          - name: LOG_LEVEL
+            value: INFO
+          - name: PYTHONUNBUFFERED
+            value: "1"
+        probes:
+          - type: liveness
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          - type: readiness
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+    scale:
+      minReplicas: 1
+      maxReplicas: 3

@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  ananya-bot:
+    build: .
+    container_name: ananya-telegram-bot
+    env_file:
+      - .env
+    environment:
+      - ENABLE_HEALTH_CHECK=true
+      - PORT=8080
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+      - ./bot.session:/app/bot.session
+      - ./bot.session-journal:/app/bot.session-journal
+    networks:
+      - bot-network
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:6.0
+    container_name: ananya-mongodb
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-password}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  mongodb_config:

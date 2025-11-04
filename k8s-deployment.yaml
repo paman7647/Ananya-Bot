@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ananya-bot
+  labels:
+    app: ananya-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ananya-bot
+  template:
+    metadata:
+      labels:
+        app: ananya-bot
+    spec:
+      containers:
+      - name: ananya-bot
+        image: ghcr.io/paman7647/ananya-bot:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PORT
+          value: "8080"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: DATABASE_NAME
+          value: "telegram_bot"
+        - name: TELEGRAM_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: telegram-bot-token
+        - name: API_ID
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: api-id
+        - name: API_HASH
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: api-hash
+        - name: ADMIN_USER_ID
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: admin-user-id
+        - name: ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: admin-token
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: gemini-api-key
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: mongodb-uri
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: secret-key
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ananya-secrets
+              key: session-secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        - name: backups
+          mountPath: /app/backups
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: backups
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ananya-bot-service
+spec:
+  selector:
+    app: ananya-bot
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ananya-secrets
+type: Opaque
+stringData:
+  telegram-bot-token: "YOUR_TELEGRAM_BOT_TOKEN"
+  api-id: "YOUR_API_ID"
+  api-hash: "YOUR_API_HASH"
+  admin-user-id: "YOUR_ADMIN_USER_ID"
+  admin-token: "YOUR_ADMIN_TOKEN"
+  gemini-api-key: "YOUR_GEMINI_API_KEY"
+  mongodb-uri: "YOUR_MONGODB_URI"
+  secret-key: "YOUR_SECRET_KEY"
+  session-secret: "YOUR_SESSION_SECRET"

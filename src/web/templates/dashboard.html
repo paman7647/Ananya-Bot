@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Manager Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: var(--success);
+            animation: none;
+        }
+
+        .status-indicator.offline {
+            background: var(--danger);
+            animation: none;
+        }
+
+        .status-indicator.connecting {
+            background: var(--warning);
+        }
+
+        .status-indicator.connected {
+            background: var(--success);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .nav-tabs {
+            background: white;
+            border-radius: 12px;
+            padding: 0.5rem;
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--gray-200);
+            margin-bottom: 2rem;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            color: var(--gray-600);
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab-button:hover {
+            background: var(--gray-50);
+            color: var(--gray-700);
+        }
+
+        .tab-button.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 2px 4px -1px rgba(59, 130, 246, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .control-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s ease;
+        }
+
+        .control-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5855eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px rgba(239, 68, 68, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            min-height: 100px;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .log-container {
+            background: var(--gray-900);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+            color: var(--gray-300);
+        }
+
+        .log-line {
+            margin-bottom: 0.25rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-timestamp {
+            color: var(--gray-500);
+        }
+
+        .log-level-info {
+            color: var(--primary);
+        }
+
+        .log-level-error {
+            color: var(--danger);
+        }
+
+        .log-level-warning {
+            color: var(--warning);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--gray-50);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-400);
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--gray-100);
+            color: var(--gray-600);
+        }
+
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+            transition: background 0.2s ease;
+        }
+
+        .user-item:hover {
+            background: var(--gray-50);
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+
+        .user-id {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .personality-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .broadcast-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .credentials-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .credential-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--gray-50);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="header-card fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-1">Bot Manager Dashboard</h1>
+                    <p class="text-gray-600">Monitor and control your Telegram bot</p>
+                </div>
+                <button onclick="logout()" class="btn btn-danger">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Logout
+                </button>
+            </div>
+
+            <div class="flex items-center">
+                <div id="statusIndicator" class="status-indicator connecting"></div>
+                <span id="statusText" class="text-gray-700 font-medium">Connecting...</span>
+                <button onclick="reconnect()" class="ml-3 btn btn-secondary text-sm">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Reconnect
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="flex">
+                <button onclick="showTab('control')" id="tab-control" class="tab-button active">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Bot Control
+                </button>
+                <button onclick="showTab('admin')" id="tab-admin" class="tab-button">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Admin Panel
+                </button>
+                <button onclick="showTab('config')" id="tab-config" class="tab-button">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                    </svg>
+                    AI Config
+                </button>
+            </div>
+        </div>
+
+        <!-- Bot Control Tab -->
+        <div id="control-tab" class="tab-content active">
+            <div class="control-grid">
+                <div class="control-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Bot Status</h3>
+                    <div class="space-y-3">
+                        <button onclick="startBot()" class="btn btn-success w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.586a1 1 0 01.707.293l.707.707A1 1 0 0012.414 11H15m2 0h1.586a1 1 0 01.707.293l.707.707A1 1 0 0021 12.414V15m0 2H3a1 1 0 01-1-1v-4a1 1 0 011-1h1.586a1 1 0 01.707-.293l.707-.707A1 1 0 017.414 9H9"></path>
+                            </svg>
+                            Start Bot
+                        </button>
+                        <button onclick="restartBot()" class="btn btn-secondary w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Restart Bot
+                        </button>
+                        <button onclick="stopBot()" class="btn btn-danger w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+                            </svg>
+                            Stop Bot
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalUsers">-</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="activeUsers">-</div>
+                            <div class="stat-label">Active Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalMessages">-</div>
+                            <div class="stat-label">Messages</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="uptime">-</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel Tab -->
+        <div id="admin-tab" class="tab-content">
+            <div class="control-grid">
+                <div class="control-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">User Management</h3>
+                    <div class="space-y-3">
+                        <button onclick="showUserManagement()" class="btn btn-primary w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                            Manage Users
+                        </button>
+                        <button onclick="showBroadcast()" class="btn btn-secondary w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                            </svg>
+                            Broadcast Message
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-card">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Personality Management</h3>
+                    <div class="space-y-3">
+                        <button onclick="showPersonalities()" class="btn btn-primary w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 0h10m-9 0V1m10 3V1m0 3l1 1v16a2 2 0 01-2 2H6a2 2 0 01-2-2V5l1-1z"></path>
+                            </svg>
+                            Manage Personalities
+                        </button>
+                        <button onclick="showCredentials()" class="btn btn-secondary w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                            </svg>
+                            Web Credentials
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Config Tab -->
+        <div id="config-tab" class="tab-content">
+            <div class="control-card">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">AI Configuration</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="form-label">AI Model</label>
+                        <select class="form-input" id="aiModel">
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                            <option value="gemini-pro">Gemini Pro</option>
+                            <option value="gpt-4">GPT-4</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Temperature</label>
+                        <input type="range" class="form-input" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button onclick="saveConfig()" class="btn btn-primary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Save Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Panel -->
+        <div class="control-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Bot Logs</h3>
+            <div id="logContainer" class="log-container">
+                <div class="log-line log-timestamp">Waiting for logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- User Management Modal -->
+    <div id="userManagementModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">User Management</h2>
+                <button class="modal-close" onclick="closeModal('userManagementModal')">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex gap-2">
+                    <input type="text" id="userSearch" placeholder="Search users by ID or username" class="form-input flex-1">
+                    <button onclick="searchUser()" class="btn btn-primary">Search</button>
+                </div>
+                <div id="userList" class="user-list">
+                    <div class="text-center py-8 text-gray-500">Loading users...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Broadcast Modal -->
+    <div id="broadcastModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Broadcast Message</h2>
+                <button class="modal-close" onclick="closeModal('broadcastModal')">&times;</button>
+            </div>
+            <form class="broadcast-form" onsubmit="sendBroadcast(event)">
+                <div class="form-group">
+                    <label class="form-label">Message</label>
+                    <textarea id="broadcastMessage" class="form-textarea" placeholder="Enter your broadcast message..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Attach File (optional)</label>
+                    <input type="file" id="broadcastFile" class="form-input" accept="image/*,video/*,audio/*,document/*">
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-success">Send Broadcast</button>
+                    <button type="button" onclick="closeModal('broadcastModal')" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Personalities Modal -->
+    <div id="personalitiesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Personality Management</h2>
+                <button class="modal-close" onclick="closeModal('personalitiesModal')">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <button onclick="showAddPersonalityForm()" class="btn btn-primary">Add New Personality</button>
+                <div id="personalitiesList">
+                    <div class="text-center py-8 text-gray-500">Loading personalities...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Personality Modal -->
+    <div id="addPersonalityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Personality</h2>
+                <button class="modal-close" onclick="closeModal('addPersonalityModal')">&times;</button>
+            </div>
+            <form class="personality-form" onsubmit="addPersonality(event)">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" id="personalityName" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <input type="text" id="personalityDescription" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">System Prompt</label>
+                    <textarea id="personalityPrompt" class="form-textarea" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="autoAddToUsers" checked>
+                        <span>Auto-add to new users</span>
+                    </label>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-success">Add Personality</button>
+                    <button type="button" onclick="closeModal('addPersonalityModal')" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Credentials Modal -->
+    <div id="credentialsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Web Credentials</h2>
+                <button class="modal-close" onclick="closeModal('credentialsModal')">&times;</button>
+            </div>
+            <div class="space-y-4">
+                <button onclick="showAddCredentialForm()" class="btn btn-primary">Add New Credentials</button>
+                <div id="credentialsList" class="credentials-list">
+                    <div class="text-center py-8 text-gray-500">Loading credentials...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Credential Modal -->
+    <div id="addCredentialModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add Web Credentials</h2>
+                <button class="modal-close" onclick="closeModal('addCredentialModal')">&times;</button>
+            </div>
+            <form class="personality-form" onsubmit="addCredential(event)">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="credentialUsername" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="credentialPassword" class="form-input" required>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-success">Add Credentials</button>
+                    <button type="button" onclick="closeModal('addCredentialModal')" class="btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // WebSocket connection
+        let ws;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        let lastPingTime = Date.now();
+        let connectionQuality = 'good';
+
+        function connect() {
+            try {
+                // Use dynamic WebSocket URL based on current location
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = function(event) {
+                    console.log('Connected to WebSocket');
+                    updateStatus('Connected', 'online');
+                    reconnectAttempts = 0;
+                    lastPingTime = Date.now();
+
+                    // Request initial logs
+                    ws.send(JSON.stringify({ action: 'get_logs' }));
+
+                    // Start ping/pong for connection quality monitoring
+                    startConnectionMonitoring();
+                };
+
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleMessage(data);
+
+                        // Update last ping time on any message
+                        lastPingTime = Date.now();
+                    } catch (e) {
+                        console.error('Error parsing WebSocket message:', e);
+                    }
+                };
+
+                ws.onclose = function(event) {
+                    console.log('WebSocket connection closed');
+                    updateStatus('Disconnected', 'offline');
+                    stopConnectionMonitoring();
+
+                    // Attempt to reconnect
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        setTimeout(() => {
+                            updateStatus('Reconnecting...', 'connecting');
+                            connect();
+                        }, 2000 * reconnectAttempts);
+                    }
+                };
+
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    updateStatus('Connection Error', 'offline');
+                    stopConnectionMonitoring();
+                };
+
+            } catch (error) {
+                console.error('Failed to connect to WebSocket:', error);
+                updateStatus('Connection Failed', 'offline');
+            }
+        }
+
+        function reconnect() {
+            if (ws) {
+                ws.close();
+            }
+            reconnectAttempts = 0;
+            updateStatus('Reconnecting...', 'connecting');
+            connect();
+        }
+
+        let connectionMonitorInterval;
+
+        function startConnectionMonitoring() {
+            connectionMonitorInterval = setInterval(() => {
+                const now = Date.now();
+                const timeSinceLastMessage = now - lastPingTime;
+
+                if (timeSinceLastMessage > 30000) { // 30 seconds
+                    connectionQuality = 'poor';
+                    updateStatus('Connected (Slow)', 'connected');
+                } else if (timeSinceLastMessage > 10000) { // 10 seconds
+                    connectionQuality = 'fair';
+                    updateStatus('Connected', 'connected');
+                } else {
+                    connectionQuality = 'good';
+                    updateStatus('Connected', 'online');
+                }
+            }, 5000);
+        }
+
+        function stopConnectionMonitoring() {
+            if (connectionMonitorInterval) {
+                clearInterval(connectionMonitorInterval);
+                connectionMonitorInterval = null;
+            }
+        }
+
+        function updateStatus(text, status) {
+            const indicator = document.getElementById('statusIndicator');
+            const textElement = document.getElementById('statusText');
+
+            indicator.className = 'status-indicator ' + status;
+            textElement.textContent = text;
+        }
+
+        function handleMessage(data) {
+            console.log('Received:', data);
+
+            if (data.type === 'stats') {
+                updateStats(data);
+            } else if (data.type === 'log') {
+                addLog(data);
+            } else if (data.type === 'status') {
+                updateStatus(data.status === 'running' ? 'Running' : data.status === 'stopped' ? 'Stopped' : 'Connecting', data.status === 'running' ? 'online' : data.status === 'stopped' ? 'offline' : 'connecting');
+            } else if (data.type === 'config_updated') {
+                console.log('Config updated:', data.config);
+                // Update UI elements if needed
+            } else if (data.type === 'error') {
+                console.error('WebSocket error:', data.message);
+                addLog({ level: 'error', message: data.message });
+            }
+        }
+
+        function updateStats(data) {
+            document.getElementById('totalUsers').textContent = data.total_users || '-';
+            document.getElementById('activeUsers').textContent = data.active_users || '-';
+            document.getElementById('totalMessages').textContent = data.total_messages || '-';
+            document.getElementById('uptime').textContent = data.uptime || '-';
+        }
+
+        function addLog(data) {
+            const logContainer = document.getElementById('logContainer');
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+
+            const timestamp = new Date().toLocaleTimeString();
+            const level = data.level || 'info';
+
+            logLine.innerHTML = `<span class="log-timestamp">[${timestamp}]</span> <span class="log-level-${level}">[${level.toUpperCase()}]</span> ${data.message}`;
+
+            logContainer.appendChild(logLine);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Bot control functions
+        function startBot() {
+            sendCommand('start');
+        }
+
+        function stopBot() {
+            sendCommand('stop');
+        }
+
+        function restartBot() {
+            sendCommand('restart');
+        }
+
+        function sendCommand(action) {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('Not connected to bot. Please check the connection.');
+                return;
+            }
+
+            ws.send(JSON.stringify({ action }));
+        }
+
+        // Admin functions
+        async function showUserManagement() {
+            document.getElementById('userManagementModal').style.display = 'block';
+            await loadUsers();
+        }
+
+        async function showBroadcast() {
+            document.getElementById('broadcastModal').style.display = 'block';
+        }
+
+        async function showPersonalities() {
+            document.getElementById('personalitiesModal').style.display = 'block';
+            await loadPersonalities();
+        }
+
+        async function showCredentials() {
+            document.getElementById('credentialsModal').style.display = 'block';
+            await loadCredentials();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const modals = ['userManagementModal', 'broadcastModal', 'personalitiesModal', 'addPersonalityModal', 'credentialsModal', 'addCredentialModal', 'configModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    closeModal(modalId);
+                }
+            });
+        });
+
+        // User Management
+        async function loadUsers() {
+            try {
+                const response = await fetch('/admin/users');
+                const data = await response.json();
+                displayUsers(data.users || []);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('userList').innerHTML = '<div class="text-center py-8 text-red-500">Error loading users</div>';
+            }
+        }
+
+        function displayUsers(users) {
+            const userList = document.getElementById('userList');
+            if (users.length === 0) {
+                userList.innerHTML = '<div class="text-center py-8 text-gray-500">No users found</div>';
+                return;
+            }
+
+            userList.innerHTML = users.map(user => `
+                <div class="user-item">
+                    <div class="user-info">
+                        <div class="user-name">${user.username || 'Unknown'}</div>
+                        <div class="user-id">ID: ${user.id}</div>
+                    </div>
+                    <div class="user-actions">
+                        <button onclick="viewUserDetails(${user.id})" class="btn btn-sm btn-primary">View</button>
+                        <button onclick="blockUser(${user.id})" class="btn btn-sm btn-danger">Block</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function searchUser() {
+            const searchTerm = document.getElementById('userSearch').value.trim();
+            if (!searchTerm) {
+                await loadUsers();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/user/${encodeURIComponent(searchTerm)}`);
+                const user = await response.json();
+                if (user) {
+                    displayUsers([user]);
+                } else {
+                    document.getElementById('userList').innerHTML = '<div class="text-center py-8 text-gray-500">User not found</div>';
+                }
+            } catch (error) {
+                console.error('Error searching user:', error);
+                document.getElementById('userList').innerHTML = '<div class="text-center py-8 text-red-500">Error searching user</div>';
+            }
+        }
+
+        async function viewUserDetails(userId) {
+            // This would open a detailed user view modal
+            alert(`User details for ID: ${userId} would be shown here`);
+        }
+
+        async function blockUser(userId) {
+            if (!confirm('Are you sure you want to block this user?')) return;
+
+            try {
+                const response = await fetch(`/admin/block/${userId}`, { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    alert('User blocked successfully');
+                    await loadUsers();
+                } else {
+                    alert('Failed to block user');
+                }
+            } catch (error) {
+                console.error('Error blocking user:', error);
+                alert('Error blocking user');
+            }
+        }
+
+        // Broadcast
+        async function sendBroadcast(event) {
+            event.preventDefault();
+
+            const message = document.getElementById('broadcastMessage').value;
+            const fileInput = document.getElementById('broadcastFile');
+            const file = fileInput.files[0];
+
+            const formData = new FormData();
+            formData.append('message', message);
+            if (file) {
+                formData.append('file', file);
+            }
+
+            try {
+                const response = await fetch('/admin/broadcast', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Broadcast sent successfully');
+                    closeModal('broadcastModal');
+                    document.getElementById('broadcastMessage').value = '';
+                    fileInput.value = '';
+                } else {
+                    alert('Failed to send broadcast');
+                }
+            } catch (error) {
+                console.error('Error sending broadcast:', error);
+                alert('Error sending broadcast');
+            }
+        }
+
+        // Personalities
+        async function loadPersonalities() {
+            try {
+                const response = await fetch('/admin/personalities');
+                const data = await response.json();
+                displayPersonalities(data.personalities || []);
+            } catch (error) {
+                console.error('Error loading personalities:', error);
+                document.getElementById('personalitiesList').innerHTML = '<div class="text-center py-8 text-red-500">Error loading personalities</div>';
+            }
+        }
+
+        function displayPersonalities(personalities) {
+            const container = document.getElementById('personalitiesList');
+            if (personalities.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">No personalities found</div>';
+                return;
+            }
+
+            container.innerHTML = personalities.map(personality => `
+                <div class="control-card">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-semibold text-gray-900">${personality.name}</h4>
+                        <div class="flex gap-2">
+                            <button onclick="editPersonality('${personality.name}')" class="btn btn-sm btn-secondary">Edit</button>
+                            <button onclick="deletePersonality('${personality.name}')" class="btn btn-sm btn-danger">Delete</button>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-2">${personality.description}</p>
+                    <div class="text-xs text-gray-500">
+                        Auto-add: ${personality.auto_add_to_users ? 'Yes' : 'No'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddPersonalityForm() {
+            // Close personalities modal and open add personality modal
+            closeModal('personalitiesModal');
+            openModal('addPersonalityModal');
+        }
+
+        async function addPersonality(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('personalityName').value.trim();
+            const description = document.getElementById('personalityDescription').value.trim();
+            const prompt = document.getElementById('personalityPrompt').value.trim();
+            const autoAdd = document.getElementById('autoAddToUsers').checked;
+
+            if (!name || !description || !prompt) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/personality', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        prompt,
+                        auto_add_to_users: autoAdd
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Personality added successfully!');
+                        closeModal('addPersonalityModal');
+                        openModal('personalitiesModal');
+                        await loadPersonalities();
+                        // Clear form
+                        document.getElementById('personalityName').value = '';
+                        document.getElementById('personalityDescription').value = '';
+                        document.getElementById('personalityPrompt').value = '';
+                        document.getElementById('autoAddToUsers').checked = true;
+                    } else {
+                        alert('Failed to add personality: ' + (result.detail || 'Unknown error'));
+                    }
+                } else {
+                    const errorText = await response.text();
+                    alert('Failed to add personality: ' + response.status + ' ' + errorText);
+                }
+            } catch (error) {
+                console.error('Error adding personality:', error);
+                alert('Error adding personality: ' + error.message);
+            }
+        }
+
+        async function deletePersonality(name) {
+            if (!confirm(`Are you sure you want to delete the personality "${name}"?`)) return;
+
+            try {
+                const response = await fetch(`/admin/personality/${encodeURIComponent(name)}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Personality deleted successfully');
+                    await loadPersonalities();
+                } else {
+                    alert('Failed to delete personality');
+                }
+            } catch (error) {
+                console.error('Error deleting personality:', error);
+                alert('Error deleting personality');
+            }
+        }
+
+        function editPersonality(name) {
+            // This would open an edit modal
+            alert(`Edit functionality for "${name}" would be implemented here`);
+        }
+
+        // Credentials
+        async function loadCredentials() {
+            try {
+                const response = await fetch('/admin/credentials');
+                const data = await response.json();
+                displayCredentials(data.usernames || []);
+            } catch (error) {
+                console.error('Error loading credentials:', error);
+                document.getElementById('credentialsList').innerHTML = '<div class="text-center py-8 text-red-500">Error loading credentials</div>';
+            }
+        }
+
+        function displayCredentials(usernames) {
+            const container = document.getElementById('credentialsList');
+            if (usernames.length === 0) {
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">No credentials found</div>';
+                return;
+            }
+
+            container.innerHTML = usernames.map(username => `
+                <div class="credential-item">
+                    <span class="font-medium">${username}</span>
+                    <button onclick="deleteCredential('${username}')" class="btn btn-sm btn-danger">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function showAddCredentialForm() {
+            document.getElementById('credentialsModal').style.display = 'none';
+            document.getElementById('addCredentialModal').style.display = 'block';
+        }
+
+        async function addCredential(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('credentialUsername').value;
+            const password = document.getElementById('credentialPassword').value;
+
+            try {
+                const response = await fetch('/admin/credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Credentials added successfully');
+                    closeModal('addCredentialModal');
+                    document.getElementById('credentialsModal').style.display = 'block';
+                    await loadCredentials();
+                    // Clear form
+                    document.getElementById('credentialUsername').value = '';
+                    document.getElementById('credentialPassword').value = '';
+                } else {
+                    alert('Failed to add credentials');
+                }
+            } catch (error) {
+                console.error('Error adding credentials:', error);
+                alert('Error adding credentials');
+            }
+        }
+
+        async function deleteCredential(username) {
+            if (!confirm(`Are you sure you want to delete credentials for "${username}"?`)) return;
+
+            try {
+                const response = await fetch(`/admin/credentials/${encodeURIComponent(username)}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Credentials deleted successfully');
+                    await loadCredentials();
+                } else {
+                    alert('Failed to delete credentials');
+                }
+            } catch (error) {
+                console.error('Error deleting credentials:', error);
+                alert('Error deleting credentials');
+            }
+        }        // Config functions
+        async function saveConfig() {
+            const model = document.getElementById('aiModel').value;
+            const temperature = parseFloat(document.getElementById('temperature').value);
+
+            try {
+                const response = await fetch('/admin/ai-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model, temperature })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Configuration saved successfully!');
+                } else {
+                    alert('Failed to save configuration');
+                }
+            } catch (error) {
+                console.error('Error saving config:', error);
+                alert('Error saving configuration');
+            }
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                fetch('/logout', { method: 'POST' })
+                    .then(() => {
+                        window.location.href = '/login';
+                    })
+                    .catch(() => {
+                        window.location.href = '/login';
+                    });
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            connect();
+        });
+
+        // Reconnect on visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && (!ws || ws.readyState === WebSocket.CLOSED)) {
+                connect();
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopConnectionMonitoring();
+            if (ws) {
+                ws.close();
+            }
+        });
+    </script>
+</body>
+</html>

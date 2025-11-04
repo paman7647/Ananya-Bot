@@ -1,0 +1,94 @@
+# Google Cloud Run service configuration
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ananya-telegram-bot
+  labels:
+    cloud.googleapis.com/location: us-central1
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "3"
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      containerConcurrency: 10
+      timeoutSeconds: 300
+      containers:
+      - image: ghcr.io/paman7647/ananya-bot:latest
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: LOG_LEVEL
+          value: INFO
+        - name: DATABASE_NAME
+          value: telegram_bot
+        - name: TELEGRAM_BOT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: telegram-bot-token
+              key: latest
+        - name: API_ID
+          valueFrom:
+            secretKeyRef:
+              name: api-id
+              key: latest
+        - name: API_HASH
+          valueFrom:
+            secretKeyRef:
+              name: api-hash
+              key: latest
+        - name: ADMIN_USER_ID
+          valueFrom:
+            secretKeyRef:
+              name: admin-user-id
+              key: latest
+        - name: ADMIN_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: admin-token
+              key: latest
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gemini-api-key
+              key: latest
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-uri
+              key: latest
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: secret-key
+              key: latest
+        - name: SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: session-secret
+              key: latest
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          periodSeconds: 10
+  traffic:
+  - percent: 100
+    latestRevision: true
