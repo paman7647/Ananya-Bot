@@ -1,10 +1,11 @@
-from telethon import TelegramClient
-from typing import Optional, Dict, Any
 import asyncio
 import logging
 from datetime import datetime
+from typing import Optional, Dict, Any
+
+from telethon import TelegramClient
+
 from src.handlers.message_handler import setup_message_handlers
-from src.utils.database import get_user_data
 
 logger = logging.getLogger(__name__)
 
@@ -35,15 +36,15 @@ class BotManager:
                 config['api_hash']
             )
             await self.client.start(bot_token=config['bot_token'])
-            
+
             # Setup message handlers
             await setup_message_handlers(self.client)
-            
+
             self.stats["status"] = "running"
             self.stats["start_time"] = datetime.now()
             logger.info("Bot started successfully")
             return True
-            
+
         except Exception as e:
             self.stats["status"] = "error"
             self.stats["last_error"] = str(e)
@@ -60,7 +61,7 @@ class BotManager:
                 logger.info("Bot stopped successfully")
                 return True
             return False
-            
+
         except Exception as e:
             self.stats["last_error"] = str(e)
             self.stats["errors"] += 1
@@ -75,12 +76,12 @@ class BotManager:
     def update_stats(self, event_type: str, data: Any = None):
         """Update bot statistics"""
         current_minute = datetime.now().minute
-        
+
         if current_minute != self._last_minute:
             self.stats["messages_per_minute"] = self._message_count
             self._message_count = 0
             self._last_minute = current_minute
-            
+
         if event_type == "message":
             self._message_count += 1
             self.stats["total_messages"] += 1

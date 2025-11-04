@@ -1,10 +1,11 @@
+import logging
+import time
+from datetime import datetime, timedelta
+from typing import Optional
+
 from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
-from datetime import datetime, timedelta
-import time
-from typing import Optional
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +62,9 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = None):
     try:
         payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except JWTError:
+    except JWTError as exc:
         raise HTTPException(
             status_code=401,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from exc
